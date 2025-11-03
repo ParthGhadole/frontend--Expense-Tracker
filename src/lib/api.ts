@@ -7,7 +7,7 @@ import axios from 'axios'
 const envApiBase = import.meta.env?.VITE_API_BASE_URL as string | undefined
 const API_BASE_URL = envApiBase
   || `${window.location.origin}/api`
-  || 'http://localhost:8000/api'
+  || 'http://43.204.211.201:8000/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,

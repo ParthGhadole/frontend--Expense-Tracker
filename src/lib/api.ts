@@ -16,6 +16,43 @@ const api = axios.create({
   },
 })
 
+// Enforce expected HTTP methods for known endpoints to avoid accidental GETs
+type HttpMethod = 'get' | 'post' | 'put' | 'delete'
+
+const routeMethodRules: Array<{ pattern: RegExp; method: HttpMethod }> = [
+  { pattern: /^\/auth\/register\/?$/, method: 'post' },
+  { pattern: /^\/auth\/login\/?$/, method: 'post' },
+  { pattern: /^\/transactions\/?$/, method: 'post' }, // creation
+  { pattern: /^\/transactions\/?$/, method: 'get' },  // list
+  { pattern: /^\/transactions\/\d+\/?$/, method: 'put' },
+  { pattern: /^\/transactions\/\d+\/?$/, method: 'delete' },
+  { pattern: /^\/categories\/?$/, method: 'post' },   // creation
+  { pattern: /^\/categories\/?$/, method: 'get' },    // list
+  { pattern: /^\/categories\/\d+\/?$/, method: 'put' },
+  { pattern: /^\/categories\/\d+\/?$/, method: 'delete' },
+  { pattern: /^\/summary\/?$/, method: 'get' },
+  { pattern: /^\/export\/?$/, method: 'get' },
+]
+
+api.interceptors.request.use((config) => {
+  const url = (config.url || '').replace(API_BASE_URL, '')
+  const method = (config.method || 'get').toLowerCase() as HttpMethod
+
+  // Find all rules matching this URL
+  const matchingRules = routeMethodRules.filter(r => r.pattern.test(url))
+  if (matchingRules.length > 0) {
+    // If any rule matches and expects a different method, correct it
+    const allowedForThisUrl = new Set<HttpMethod>(matchingRules.map(r => r.method))
+    if (!allowedForThisUrl.has(method)) {
+      // Prefer POST over GET if both exist for base collection endpoints
+      const preferred: HttpMethod = allowedForThisUrl.has('post') ? 'post' : Array.from(allowedForThisUrl)[0]
+      console.warn(`[api] Adjusting method for ${url} from ${method.toUpperCase()} to ${preferred.toUpperCase()}`)
+      config.method = preferred
+    }
+  }
+  return config
+})
+
 // Types
 export interface User {
   user_id: number

@@ -4,7 +4,7 @@ import axios from 'axios'
 // 1) Prefer VITE_API_BASE_URL (set in production)
 // 2) Fallback to same-origin "/api" (useful when serving backend and frontend from one domain)
 // 3) Finally, fallback to localhost for local dev
-const API_BASE_URL = 'http://43.204.211.201:8000/api'
+const API_BASE_URL = 'http://13.127.218.240:8000/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
